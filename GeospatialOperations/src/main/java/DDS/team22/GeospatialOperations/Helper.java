@@ -1,7 +1,5 @@
 package DDS.team22.GeospatialOperations;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -33,16 +31,6 @@ public class Helper {
 			result+=cor.x+","+cor.y+"\n";
 		}
 		
-		File file=new File("convexHullResult.txt");
-		FileWriter fw;
-		if(file.exists())
-			fw=new FileWriter(file);
-		else{
-			file.createNewFile();
-			fw=new FileWriter(file);
-		}
-		fw.write(result);
-		fw.close();
 		return result;
 	}
 
