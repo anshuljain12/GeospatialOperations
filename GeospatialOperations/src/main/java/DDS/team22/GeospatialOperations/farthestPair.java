@@ -27,7 +27,7 @@ public class farthestPair
     	 * Input File path and output directory for the result. Call Farthest Point Function
     	 */
         String inputFile = "input_data/FarthestPairTestData.csv";
-        String outputDir = "output_data/FarthestPairTestResult";
+        String outputDir = "output_data/FarthestPairTestResult_"+Utils.getCurrentTime();
         farthestPoints(inputFile,outputDir);
         
     }

@@ -25,7 +25,7 @@ public class UnionPolygon {
 		// TODO Auto-generated method stub
 		SparkConf conf = new SparkConf().setAppName("Union Polygon").setMaster("spark://192.168.0.6:7077");
 		JavaSparkContext sc = new JavaSparkContext(conf);
-		unionPolygons(sc,"input_data/UnionQueryTestData.csv", "output_data/UnionQueryTestResult");
+		unionPolygons(sc,"input_data/UnionQueryTestData.csv", "output_data/UnionQueryTestResult_"+Utils.getCurrentTime());
 		
 		sc.close();
 	}

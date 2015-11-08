@@ -16,7 +16,7 @@ public class SpatialJoinQuery {
 	public static void main(String[] args) throws IOException {
 		String inp1 = "input_data/JoinQueryInput2.csv";
 		String inp2 = "input_data/JoinQueryInput1.csv";
-		String out = "output_data/JoinQueryResult";
+		String out = "output_data/JoinQueryResult_"+Utils.getCurrentTime();
 		SparkConf conf = new SparkConf().setAppName("Simple Application");
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		spatialJoinQuery(inp1, inp2, out, sc);
