@@ -105,9 +105,10 @@ public class ClosestPair {
 		});
         
         JavaRDD<PointDouble> points = FinalClosetPairList.repartition(1);
-        points.saveAsTextFile("output_data/closestPair");
+        String output_folder = "output_data/closestPair_"+Utils.getCurrentTime();
+        points.saveAsTextFile(output_folder);
         List<PointDouble> point_list = points.collect();
-        File file = new File("output_data/closestPair/Result.txt");
+        File file = new File(output_folder+"/Result.txt");
 		FileWriter fw;
         String result = "";
         for (PointDouble p : point_list){
