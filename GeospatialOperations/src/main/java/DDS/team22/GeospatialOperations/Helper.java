@@ -19,8 +19,8 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 public class Helper {
 	
-	public static String ConvexHull(JavaSparkContext sc) throws IOException{
-		JavaRDD<String>points=sc.textFile("ConvexHullTestData.csv");		
+	public static String ConvexHull(JavaSparkContext sc, String input_file) throws IOException{
+		JavaRDD<String>points=sc.textFile(input_file);		
 		JavaRDD<Coordinate>local=Helper.calculateConvexHull(points);
 		JavaRDD<Coordinate> localList = local.repartition(1);
 		
@@ -28,6 +28,7 @@ public class Helper {
 		String result="";
 		List<Coordinate>list=globalList.collect();
 		list.remove(list.size()-1);
+		
 		for(Coordinate cor : list){
 			result+=cor.x+","+cor.y+"\n";
 		}

@@ -25,21 +25,20 @@ public class UnionPolygon {
 		// TODO Auto-generated method stub
 		SparkConf conf = new SparkConf().setAppName("Union Polygon").setMaster("spark://192.168.0.6:7077");
 		JavaSparkContext sc = new JavaSparkContext(conf);
-		sc.addJar("/home/user22/Desktop/GeospatialOperations/GeospatialOperations/libs/jts-1.13.jar");
-		unionPolygons(sc,"/home/user22/Desktop/UnionQueryTestData.csv", "");
+		unionPolygons(sc,"UnionQueryTestData.csv", "UnionQueryTestResult");
 		
 		sc.close();
 	}
 	
 	public static void unionPolygons(JavaSparkContext sc, String input_file,String output_file) throws IOException{
-		File file = new File("/home/user22/Desktop/resultdata/Result.txt");
+		File file = new File(output_file+"/Result.txt");
 		FileWriter fw; 
 		JavaRDD<String> input_data = sc.textFile(input_file);
 		JavaRDD<Geometry> poly_rdd = input_data.mapPartitions(LocalUnion);
 		Collection<Geometry> poly_list = poly_rdd.collect();
 		CascadedPolygonUnion cascaded_polygons = new CascadedPolygonUnion(poly_list);
 		Coordinate[] coordinates = cascaded_polygons.union().getCoordinates();
-		poly_rdd.saveAsTextFile("/home/user22/Desktop/resultdata/");
+		poly_rdd.saveAsTextFile(output_file);
 		String result = "";
 		for (int i=0;i<coordinates.length-1;i++){
 			result += coordinates[i].x+", "+coordinates[i].y+"\n";
