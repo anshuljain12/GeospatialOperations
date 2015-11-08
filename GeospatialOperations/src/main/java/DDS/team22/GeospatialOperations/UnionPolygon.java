@@ -23,10 +23,10 @@ public class UnionPolygon {
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
-		SparkConf conf = new SparkConf().setAppName("Union Polygon").setMaster("spark://192.168.0.4:7077");
+		SparkConf conf = new SparkConf().setAppName("Union Polygon").setMaster("spark://192.168.0.6:7077");
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		sc.addJar("/home/user22/Desktop/GeospatialOperations/GeospatialOperations/libs/jts-1.13.jar");
-		unionPolygons(sc,"/home/user22/Desktop/testdata.txt", "");
+		unionPolygons(sc,"/home/user22/Desktop/UnionQueryTestData.csv", "");
 		
 		sc.close();
 	}
@@ -41,8 +41,8 @@ public class UnionPolygon {
 		Coordinate[] coordinates = cascaded_polygons.union().getCoordinates();
 		poly_rdd.saveAsTextFile("/home/user22/Desktop/resultdata/");
 		String result = "";
-		for (Coordinate coordinate : coordinates){
-			result += coordinate.x+", "+coordinate.y+"\n";
+		for (int i=0;i<coordinates.length-1;i++){
+			result += coordinates[i].x+", "+coordinates[i].y+"\n";
 		}
 		if (file.exists())
 		   fw = new FileWriter(file,false);
