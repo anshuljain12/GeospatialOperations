@@ -1,7 +1,13 @@
 package DDS.team22.GeospatialOperations;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.Function;
 
 public class Utils {
 
@@ -76,5 +82,43 @@ class PointDouble implements Serializable,Comparable<PointDouble>{
 		}
 		else
 			return -1;
-	} 
+	}
+	
+	public static Function<String, PointDouble> ToPointDouble = new Function<String, PointDouble>(){
+		private static final long serialVersionUID = 1L;
+
+		public PointDouble call(String s) {
+			String[] c = s.split(",");
+			PointDouble p = new PointDouble();
+			p.setxCoordinate(Double.parseDouble(c[0].trim()));
+			p.setyCoordinate(Double.parseDouble(c[1].trim()));
+			return p;
+		}
+	};
+	
+	public static FlatMapFunction<Iterator<PointDouble>, PointDouble> SortRDD = new FlatMapFunction<Iterator<PointDouble>, PointDouble>() {
+
+		public Iterable<PointDouble> call(Iterator<PointDouble> point)
+				throws Exception {
+			List<PointDouble>point_list=new ArrayList<PointDouble>();
+			while(point.hasNext()){
+				point_list.add(point.next());
+			}
+			Collections.sort(point_list);
+			
+			return point_list;
+		}
+	};
+	
+	public static Function<PointDouble, String> PointToString = new Function<PointDouble,String>() {
+		
+		public String call(PointDouble s) {
+			
+			StringBuffer res=new StringBuffer();
+			res.append(s.getxCoordinate());
+			res.append(",");
+			res.append(s.getyCoordinate());
+			return res.toString();
+		}
+	};
 }

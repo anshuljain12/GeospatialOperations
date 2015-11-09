@@ -28,13 +28,12 @@ public class Helper {
 
 		JavaRDD<String>globalPoints = globalList.map(new Function<Coordinate,String>() {
 		public String call(Coordinate s) {
-		StringBuffer res=new StringBuffer();
-		res.append(s.x);
-		res.append(",");
-		res.append(s.y);
-		return res.toString();
-
-		}
+			StringBuffer res=new StringBuffer();
+			res.append(s.x);
+			res.append(",");
+			res.append(s.y);
+			return res.toString();
+			}
 		});	
 
 

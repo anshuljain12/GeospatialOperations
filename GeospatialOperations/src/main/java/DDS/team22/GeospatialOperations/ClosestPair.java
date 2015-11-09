@@ -110,31 +110,9 @@ public class ClosestPair {
         
         String output_folder = "output_data/closestPair_"+Utils.getCurrentTime();
         
-        JavaRDD<PointDouble>point_rdd = points.mapPartitions(new FlatMapFunction<Iterator<PointDouble>, PointDouble>() {
-
-			public Iterable<PointDouble> call(Iterator<PointDouble> point)
-					throws Exception {
-				List<PointDouble>point_list=new ArrayList<PointDouble>();
-				while(point.hasNext()){
-					point_list.add(point.next());
-				}
-				Collections.sort(point_list);
-				
-				return point_list;
-			}
-		});
+        JavaRDD<PointDouble>point_rdd = points.mapPartitions(PointDouble.SortRDD);
         
-        JavaRDD<String>result = point_rdd.map(new Function<PointDouble,String>() {
-			
-			public String call(PointDouble s) {
-				
-				StringBuffer res=new StringBuffer();
-				res.append(s.getxCoordinate());
-				res.append(",");
-				res.append(s.getyCoordinate());
-				return res.toString();
-			}
-		});
+        JavaRDD<String>result = point_rdd.map(PointDouble.PointToString);
                 
         result.saveAsTextFile(output_folder);
         sc.close();
