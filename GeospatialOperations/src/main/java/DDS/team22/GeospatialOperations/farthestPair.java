@@ -54,9 +54,7 @@ public class farthestPair
     	
     	//Read the input file and converts it into Rdd
     	
-    	String coordinates = Helper.ConvexHull(sc, inputFile);
-    	String[] cor_arr = coordinates.split("\n");
-    	List<String> cor_list = Arrays.asList(cor_arr);
+    	List<String> cor_list = Helper.ConvexHull(sc, inputFile);
     	JavaRDD<String> inputRdd = sc.parallelize(cor_list);
     	
     	//Get the String points into objects of point class
