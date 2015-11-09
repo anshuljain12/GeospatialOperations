@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.Function;
 
 import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -17,25 +18,26 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 public class Helper {
 	
-	public static List<String> ConvexHull(JavaSparkContext sc, String input_file) throws IOException{
+	public static JavaRDD ConvexHull(JavaSparkContext sc, String input_file) throws IOException{
 		JavaRDD<String>points=sc.textFile(input_file);		
 		JavaRDD<Coordinate>local=Helper.calculateConvexHull(points);
-		List<Coordinate>localTemp=local.collect();
+		JavaRDD<Coordinate>localList=local.repartition(1);
 		
-		local=sc.parallelize(localTemp);
-		JavaRDD<Coordinate> localList = local.repartition(1);
 		JavaRDD<Coordinate>globalList = localList.mapPartitions(new GlobalHull());
 		globalList = globalList.mapPartitions(new GlobalHull());
-		List<String> result=new ArrayList<String>();
-		List<Coordinate>list=globalList.collect();
-		
-		list.remove(list.size()-1);
-		
-		for(Coordinate cor : list){
-			result.add(cor.x+", "+cor.y);
-		}
-		
-		return result;
+
+		JavaRDD<String>globalPoints = globalList.map(new Function<Coordinate,String>() {
+		public String call(Coordinate s) {
+			StringBuffer res=new StringBuffer();
+			res.append(s.x);
+			res.append(",");
+			res.append(s.y);
+			return res.toString();
+			}
+		});	
+
+
+		return globalPoints;
 	}
 
 	public static JavaRDD<Coordinate>calculateConvexHull(JavaRDD<String>points){
