@@ -39,7 +39,9 @@ public class UnionPolygon {
 		JavaRDD<Geometry> poly_rdd_rep = poly_rdd.repartition(1);
 		JavaRDD<String> final_polygons = poly_rdd_rep.mapPartitions(GlobalUnion).repartition(1).distinct();
 
-		final_polygons.saveAsTextFile(output_file);
+		final_polygons.map(PointDouble.ToPointDouble).
+		mapPartitions(PointDouble.SortRDD).map(PointDouble.PointToString)
+		.saveAsTextFile(output_file);
 	}
 
 	public static FlatMapFunction<Iterator<Geometry>, String> GlobalUnion = new FlatMapFunction<Iterator<Geometry>, String>(){

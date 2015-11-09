@@ -17,12 +17,13 @@ public class ConvHull {
 			sc.close();
 			return;
 		}
-		//List<String> result = Helper.ConvexHull(sc,args[0]);
-		//JavaRDD<String> global_result = sc.parallelize(result).repartition(1);
-		JavaRDD<String> global_result = Helper.ConvexHull(sc,args[0]);
-		global_result.repartition(1);
+
 		String output_folder = args[1]+Utils.getCurrentTime();
-		global_result.distinct().saveAsTextFile(output_folder);
+		JavaRDD<String> global_result = Helper.ConvexHull(sc,args[0]);
+		JavaRDD<PointDouble> double_points = global_result.distinct().map(PointDouble.ToPointDouble);
+		JavaRDD<PointDouble> all_double_points = double_points.mapPartitions(PointDouble.SortRDD).distinct();
+		global_result = all_double_points.map(PointDouble.PointToString);
+		global_result.saveAsTextFile(output_folder);
 		sc.close();
 	}
 }
