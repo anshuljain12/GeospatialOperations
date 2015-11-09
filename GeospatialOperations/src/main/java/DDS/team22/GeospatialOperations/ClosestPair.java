@@ -26,7 +26,7 @@ public class ClosestPair {
 		System.out.println("Starting with closest pair of points");
 		
 		String logFile = "input_data/ClosestPairTestData.csv";
-		SparkConf conf = new SparkConf().setAppName("Closest Pair").setMaster("spark://192.168.0.6:7077");
+		SparkConf conf = new SparkConf().setAppName("Closest Pair");
         JavaSparkContext sc = new JavaSparkContext(conf);
         JavaRDD<String> logData = sc.textFile(logFile);
         
@@ -106,23 +106,13 @@ public class ClosestPair {
         
         JavaRDD<PointDouble> points = FinalClosetPairList.repartition(1);
         String output_folder = "output_data/closestPair_"+Utils.getCurrentTime();
-        points.saveAsTextFile(output_folder);
         List<PointDouble> point_list = points.collect();
-        File file = new File(output_folder+"/Result.txt");
-		FileWriter fw;
-        String result = "";
+        List<String> result = new ArrayList<String>();
         for (PointDouble p : point_list){
-        	result += p.getxCoordinate()+", "+p.getyCoordinate()+"\n";
+        	result.add(p.getxCoordinate()+", "+p.getyCoordinate());
         }
-		if (file.exists())
-		   fw = new FileWriter(file,false);
-		else
-		{
-		   file.createNewFile();
-		   fw = new FileWriter(file);
-		}
-		fw.write(result);
-		fw.close();
+        JavaRDD<String> global_result = sc.parallelize(result).repartition(1);
+        global_result.saveAsTextFile(output_folder);
         sc.close();
     }
 

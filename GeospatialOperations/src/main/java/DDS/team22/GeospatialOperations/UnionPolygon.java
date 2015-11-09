@@ -23,35 +23,24 @@ public class UnionPolygon {
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
-		SparkConf conf = new SparkConf().setAppName("Union Polygon").setMaster("spark://192.168.0.6:7077");
+		SparkConf conf = new SparkConf().setAppName("Union Polygon");
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		unionPolygons(sc,"input_data/UnionQueryTestData.csv", "output_data/UnionQueryTestResult_"+Utils.getCurrentTime());
-		
 		sc.close();
 	}
 	
-	public static void unionPolygons(JavaSparkContext sc, String input_file,String output_file) throws IOException{
-		File file = new File(output_file+"/Result.txt");
-		FileWriter fw; 
+	public static void unionPolygons(JavaSparkContext sc, String input_file,String output_file) throws IOException{ 
 		JavaRDD<String> input_data = sc.textFile(input_file);
 		JavaRDD<Geometry> poly_rdd = input_data.mapPartitions(LocalUnion);
 		Collection<Geometry> poly_list = poly_rdd.collect();
 		CascadedPolygonUnion cascaded_polygons = new CascadedPolygonUnion(poly_list);
 		Coordinate[] coordinates = cascaded_polygons.union().getCoordinates();
-		poly_rdd.saveAsTextFile(output_file);
-		String result = "";
+		List<String> result = new ArrayList<String>();
 		for (int i=0;i<coordinates.length-1;i++){
-			result += coordinates[i].x+", "+coordinates[i].y+"\n";
+			result.add(coordinates[i].x+", "+coordinates[i].y);
 		}
-		if (file.exists())
-		   fw = new FileWriter(file,false);
-		else
-		{
-		   file.createNewFile();
-		   fw = new FileWriter(file);
-		}
-		fw.write(result);
-		fw.close();
+		JavaRDD<String> global_output = sc.parallelize(result).repartition(1);
+		global_output.saveAsTextFile(output_file);
 	}
 
 	public static FlatMapFunction<Iterator<String>, Geometry> LocalUnion = new FlatMapFunction<Iterator<String>, Geometry>(){
