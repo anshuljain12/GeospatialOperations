@@ -16,7 +16,7 @@ public class SpatialJoinQuery {
 	public static void main(String[] args) throws IOException {
 		String inp1 = "input_data/JoinQueryInput2.csv";
 		String inp2 = "input_data/JoinQueryInput1.csv";
-		String out = "output_data/JoinQueryResult_"+Utils.getCurrentTime();
+		String out = "output_data/JoinQueryResult_" + Utils.getCurrentTime();
 		SparkConf conf = new SparkConf().setAppName("Simple Application");
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		spatialJoinQuery(inp1, inp2, out, sc);
@@ -73,8 +73,18 @@ public class SpatialJoinQuery {
 
 					}
 				});
+		String formatedString;
 
-		resultantRect.repartition(1).saveAsTextFile(outputPath);
+		List<Tuple2<Long, List<Long>>> resultantRect1 = resultantRect.collect();
+		List<String> str = new ArrayList<String>();
+		for (Tuple2<Long, List<Long>> res : resultantRect1) {
+			formatedString = res.toString().replace("[", "").replace("]", "")
+					.replace("(", "").replace(")", "");
+			str.add(formatedString);
+		}
+
+		JavaRDD<String> finalResultRDD = sc.parallelize(str);
+		finalResultRDD.repartition(1).saveAsTextFile(outputPath);
 		return false;
 
 	}
