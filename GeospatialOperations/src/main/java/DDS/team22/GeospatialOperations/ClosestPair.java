@@ -26,8 +26,11 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 public class ClosestPair {
 	public static void main(String[] args) throws IOException {
 		System.out.println("Starting with closest pair of points");
-		
-		String logFile = "input_data/ClosestPairTestData.csv";
+		if (args.length<2){
+			System.out.println("Insufficient number of arguments");
+			return;
+		}
+		String logFile = args[0];
 		SparkConf conf = new SparkConf().setAppName("Closest Pair");
         JavaSparkContext sc = new JavaSparkContext(conf);
         JavaRDD<String> logData = sc.textFile(logFile);
@@ -108,7 +111,7 @@ public class ClosestPair {
         
         JavaRDD<PointDouble> points = FinalClosetPairList.repartition(1);
         
-        String output_folder = "output_data/closestPair_"+Utils.getCurrentTime();
+        String output_folder = args[1]+Utils.getCurrentTime();
         
         JavaRDD<PointDouble>point_rdd = points.mapPartitions(PointDouble.SortRDD);
         
