@@ -17,7 +17,7 @@ public class RangeQuery {
 
 		String input1 = args[0];
 		String input2 = args[1];
-		String output = args[2];
+		String output = args[2] + Utils.getCurrentTime();
 
 		SpatialRangeQuery(input1, input2, output);
 
@@ -92,7 +92,11 @@ public class RangeQuery {
 		
 		
 		
-		filteredResultPointRDD.repartition(1).saveAsTextFile(outputFilelocation);
+		filteredResultPointRDD.sortBy(new Function<Long, Long>() {
+			public Long call(Long s) {
+				return s;
+			}
+		}, true, 1).repartition(1).saveAsTextFile(outputFilelocation);
 
 		return true;
 	}

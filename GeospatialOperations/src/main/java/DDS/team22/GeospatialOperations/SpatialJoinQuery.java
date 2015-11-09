@@ -27,7 +27,7 @@ public class SpatialJoinQuery {
 		String inp2 = args[1]; // Input 2: csv file containing query input
 		String out = args[2]+Utils.getCurrentTime();  // Output: File where the result is stored
         String inputType=args[3]; // InputType: whether Point or rectangle 
-		SparkConf conf = new SparkConf().setAppName("Simple Application");
+		SparkConf conf = new SparkConf().setAppName("Spatial Join");
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		spatialJoinQuery(inp1, inp2, out, inputType, sc);  //Function which performs spatial join functionality on given input file.
 		sc.close();
@@ -99,7 +99,11 @@ public class SpatialJoinQuery {
 			}
             //Saving into file. 
 			JavaRDD<String> finalPointResultRDD = sc.parallelize(strPointsList);
-			finalPointResultRDD.repartition(1).saveAsTextFile(outputPath);
+			finalPointResultRDD.sortBy(new Function<String, String>() {
+				public String call(String s) {
+					return s;
+				}
+			}, true, 1).repartition(1).saveAsTextFile(outputPath);
 
 		} else if (inputType.equalsIgnoreCase("rectangle")) {
 			
@@ -181,7 +185,11 @@ public class SpatialJoinQuery {
 			}
 			 //Saving into file.
 			JavaRDD<String> finalResultRDD = sc.parallelize(str);
-			finalResultRDD.repartition(1).saveAsTextFile(outputPath);
+			finalResultRDD.sortBy(new Function<String, String>() {
+				public String call(String s) {
+					return s;
+				}
+			}, true, 1).repartition(1).saveAsTextFile(outputPath);
 		}
 
 		return false;
