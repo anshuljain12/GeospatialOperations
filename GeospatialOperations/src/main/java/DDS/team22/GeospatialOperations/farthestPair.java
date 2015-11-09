@@ -7,7 +7,6 @@ import java.io.IOException;
  * Output: Pair of points like x1,y1 and x2,y2 in new lines
  */
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.spark.SparkConf;
@@ -26,8 +25,12 @@ public class farthestPair
     	/*
     	 * Input File path and output directory for the result. Call Farthest Point Function
     	 */
-        String inputFile = "input_data/FarthestPairTestData.csv";
-        String outputDir = "output_data/FarthestPairTestResult_"+Utils.getCurrentTime();
+    	if (args.length<2){
+			System.out.println("Insufficient number of inputs");
+			return;
+		}
+        String inputFile = args[0];
+        String outputDir = args[1]+Utils.getCurrentTime();
         farthestPoints(inputFile,outputDir);
         
     }

@@ -1,7 +1,5 @@
 package DDS.team22.GeospatialOperations;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +23,12 @@ public class UnionPolygon {
 		// TODO Auto-generated method stub
 		SparkConf conf = new SparkConf().setAppName("Union Polygon");
 		JavaSparkContext sc = new JavaSparkContext(conf);
-		unionPolygons(sc,"input_data/UnionQueryTestData.csv", "output_data/UnionQueryTestResult_"+Utils.getCurrentTime());
+		if (args.length<2){
+			System.out.println("Insufficient number of inputs");
+			sc.close();
+			return;
+		}
+		unionPolygons(sc,args[0], args[1]+Utils.getCurrentTime());
 		sc.close();
 	}
 	

@@ -14,9 +14,13 @@ import scala.Tuple2;
 
 public class SpatialJoinQuery {
 	public static void main(String[] args) throws IOException {
-		String inp1 = "input_data/JoinQueryInput2.csv";
-		String inp2 = "input_data/JoinQueryInput1.csv";
-		String out = "output_data/JoinQueryResult_" + Utils.getCurrentTime();
+		if (args.length<4){
+			System.out.println("Insufficient number of inputs");
+			return;
+		}
+		String inp1 = args[0];
+		String inp2 = args[1];
+		String out = args[2] + Utils.getCurrentTime();
 		SparkConf conf = new SparkConf().setAppName("Simple Application");
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		spatialJoinQuery(inp1, inp2, out, sc);
