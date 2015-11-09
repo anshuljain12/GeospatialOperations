@@ -9,7 +9,7 @@ public class Rectangle implements java.io.Serializable {
 	float id;
 
 	public SpatialPoint getLeftLower() {
-		return leftLower;
+		return this.leftLower;
 	}
 
 	public void setLeftLower(SpatialPoint leftLower) {
@@ -17,7 +17,7 @@ public class Rectangle implements java.io.Serializable {
 	}
 
 	public SpatialPoint getLeftUpper() {
-		return leftUpper;
+		return this.leftUpper;
 	}
 
 	public void setLeftUpper(SpatialPoint leftUpper) {
@@ -25,7 +25,7 @@ public class Rectangle implements java.io.Serializable {
 	}
 
 	public SpatialPoint getRightLower() {
-		return rightLower;
+		return this.rightLower;
 	}
 
 	public void setRightLower(SpatialPoint rightLower) {
@@ -33,7 +33,7 @@ public class Rectangle implements java.io.Serializable {
 	}
 
 	public SpatialPoint getRightUpper() {
-		return rightUpper;
+		return this.rightUpper;
 	}
 
 	public void setRightUpper(SpatialPoint rightUpper) {
@@ -41,7 +41,7 @@ public class Rectangle implements java.io.Serializable {
 	}
 
 	public float getId() {
-		return id;
+		return this.id;
 	}
 
 	public void setId(int id) {
@@ -63,10 +63,18 @@ public class Rectangle implements java.io.Serializable {
 			float xRightUpper, float yRightUpper) {
 
 		this.id = id;
-
+		if (xLeftLower>xRightUpper){
+			float temp = xLeftLower;
+			xLeftLower = xRightUpper;
+			xRightUpper = temp;
+		}
+		if (yLeftLower>yRightUpper){
+			float temp = yLeftLower;
+			yLeftLower = yRightUpper;
+			yRightUpper = temp;
+		}
 		leftLower = new SpatialPoint(xLeftLower, yLeftLower);
 		rightUpper = new SpatialPoint(xRightUpper, yRightUpper);
-
 		leftUpper = new SpatialPoint(xLeftLower, yRightUpper);
 		rightLower = new SpatialPoint(xRightUpper, yLeftLower);
 
@@ -83,6 +91,26 @@ public class Rectangle implements java.io.Serializable {
 				&& pointY > this.rightLower.pointY
 				&& pointX < this.rightUpper.pointX
 				&& pointY < this.rightUpper.pointY) {
+			
+			return true;
+
+		} else {
+			return false;
+		}
+
+	}
+	public boolean findIfPointIsInsideforPoint(SpatialPoint point) {
+		float pointX = point.pointX;
+		float pointY = point.pointY;
+
+		if (pointX >= this.leftLower.pointX && pointY >= this.leftLower.pointY
+				&& pointX >= this.leftUpper.pointX
+				&& pointY <= this.leftUpper.pointY
+				&& pointX <= this.rightLower.pointX
+				&& pointY >= this.rightLower.pointY
+				&& pointX <= this.rightUpper.pointX
+				&& pointY <= this.rightUpper.pointY) {
+			
 			return true;
 
 		} else {

@@ -15,9 +15,9 @@ public class RangeQuery {
 
 	public static void main(String[] args) {
 
-		String input1 = "input_data/RangeQueryTestData.csv";
-		String input2 = "input_data/RangeQueryRectangle.csv";
-		String output = "output_data/RangeQueryOutput_"+ Utils.getCurrentTime();
+		String input1 = args[0];
+		String input2 = args[1];
+		String output = args[2];
 
 		SpatialRangeQuery(input1, input2, output);
 
