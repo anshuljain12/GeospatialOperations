@@ -1,9 +1,12 @@
 package DDS.team22.GeospatialOperations;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -13,6 +16,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.Function;
 
 import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -21,13 +25,9 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 
 public class ClosestPair {
 	public static void main(String[] args) throws IOException {
-
 		System.out.println("Starting with closest pair of points");
-		if (args.length<2){
-			System.out.println("Insufficient number of inputs");
-			return;
-		}
-		String logFile = args[0];
+		
+		String logFile = "input_data/ClosestPairTestData.csv";
 		SparkConf conf = new SparkConf().setAppName("Closest Pair");
         JavaSparkContext sc = new JavaSparkContext(conf);
         JavaRDD<String> logData = sc.textFile(logFile);
@@ -101,20 +101,42 @@ public class ClosestPair {
 				List<PointDouble> geoSpatialClosestPoints = new ArrayList<PointDouble>();
 				geoSpatialClosestPoints.add(finalClosetstPairOfPoints.closestPoint1);
 				geoSpatialClosestPoints.add(finalClosetstPairOfPoints.closestPoint2);
-
+				
 		        return geoSpatialClosestPoints;
 		        }
 		});
         
         JavaRDD<PointDouble> points = FinalClosetPairList.repartition(1);
-        String output_folder = args[1]+Utils.getCurrentTime();
-        List<PointDouble> point_list = points.collect();
-        List<String> result = new ArrayList<String>();
-        for (PointDouble p : point_list){
-        	result.add(p.getxCoordinate()+", "+p.getyCoordinate());
-        }
-        JavaRDD<String> global_result = sc.parallelize(result).repartition(1);
-        global_result.saveAsTextFile(output_folder);
+        
+        String output_folder = "output_data/closestPair_"+Utils.getCurrentTime();
+        
+        JavaRDD<PointDouble>point_rdd = points.mapPartitions(new FlatMapFunction<Iterator<PointDouble>, PointDouble>() {
+
+			public Iterable<PointDouble> call(Iterator<PointDouble> point)
+					throws Exception {
+				List<PointDouble>point_list=new ArrayList<PointDouble>();
+				while(point.hasNext()){
+					point_list.add(point.next());
+				}
+				Collections.sort(point_list);
+				
+				return point_list;
+			}
+		});
+        
+        JavaRDD<String>result = point_rdd.map(new Function<PointDouble,String>() {
+			
+			public String call(PointDouble s) {
+				
+				StringBuffer res=new StringBuffer();
+				res.append(s.getxCoordinate());
+				res.append(",");
+				res.append(s.getyCoordinate());
+				return res.toString();
+			}
+		});
+                
+        result.saveAsTextFile(output_folder);
         sc.close();
     }
 
@@ -157,50 +179,6 @@ public class ClosestPair {
 		return closestPairDetails;
 	}
 	
-}
-
-class PointDouble implements Serializable{
-	
-	private static final long serialVersionUID = 1L;
-	private double xCoordinate;
-	private double yCoordinate;
-	
-	public double getxCoordinate() {
-		return xCoordinate;
-	}
-	public void setxCoordinate(double xCoordinate) {
-		this.xCoordinate = xCoordinate;
-	}
-	public double getyCoordinate() {
-		return yCoordinate;
-	}
-	public void setyCoordinate(double yCoordinate) {
-		this.yCoordinate = yCoordinate;
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		PointDouble other = (PointDouble) obj;
-		if (Double.doubleToLongBits(xCoordinate) != Double
-				.doubleToLongBits(other.xCoordinate))
-			return false;
-		if (Double.doubleToLongBits(yCoordinate) != Double
-				.doubleToLongBits(other.yCoordinate))
-			return false;
-		return true;
-	}
-	
-	@Override
-	public String toString() {
-		return "Point [xCoordinate=" + xCoordinate + ", yCoordinate="
-				+ yCoordinate + "]";
-	}
 }
 
 class ClosestPairOfPoints implements Serializable{
