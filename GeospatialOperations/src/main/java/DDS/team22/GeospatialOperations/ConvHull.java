@@ -21,7 +21,7 @@ public class ConvHull {
 		String output_folder = args[1]+Utils.getCurrentTime();
 		JavaRDD<String> global_result = Helper.ConvexHull(sc,args[0]);
 		JavaRDD<PointDouble> double_points = global_result.distinct().map(PointDouble.ToPointDouble);
-		JavaRDD<PointDouble> all_double_points = double_points.mapPartitions(PointDouble.SortRDD).distinct();
+		JavaRDD<PointDouble> all_double_points = double_points.mapPartitions(PointDouble.SortRDD);
 		global_result = all_double_points.map(PointDouble.PointToString);
 		global_result.saveAsTextFile(output_folder);
 		sc.close();

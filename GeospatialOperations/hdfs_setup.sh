@@ -3,7 +3,7 @@
 #export the conf file
 #./env.conf
 echo $input_dir
-echo -n "Please select option  1. Copy Input Files from hdfs  , 2. Remove Files from hdfs , 3. get files from hdfs output "
+echo -n "Please select option  1. Copy Input Files to hdfs  , 2. Remove Files from hdfs , 3. get files from hdfs output "
 read answer
 
 if [ ${answer} -eq 1 ]; then
@@ -22,6 +22,9 @@ if [ ${answer} -eq 1 ]; then
 elif [ ${answer} -eq 2 ]; then
 	hadoop fs -rm  hdfs://192.168.0.21:54310/$input_dir/*
 	hadoop fs -rmdir hdfs://192.168.0.21:54310/$input_dir
+	hadoop fs -rm  hdfs://192.168.0.21:54310/${output_dir}/*/*
+	hadoop fs -rmdir  hdfs://192.168.0.21:54310/${output_dir}/*
+	hadoop fs -rmdir  hdfs://192.168.0.21:54310/${output_dir}/
 	echo "Remove files and directory in hadoop"
 elif [ ${answer} -eq 3 ]; then
 	hadoop fs -get  hdfs://192.168.0.21:54310/$output_dir/* ${output_dir}/
