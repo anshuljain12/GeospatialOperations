@@ -12,6 +12,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 
+import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -35,17 +36,30 @@ public class UnionPolygon {
 	public static void unionPolygons(JavaSparkContext sc, String input_file,String output_file) throws IOException{ 
 		JavaRDD<String> input_data = sc.textFile(input_file);
 		JavaRDD<Geometry> poly_rdd = input_data.mapPartitions(LocalUnion);
-		Collection<Geometry> poly_list = poly_rdd.collect();
-		CascadedPolygonUnion cascaded_polygons = new CascadedPolygonUnion(poly_list);
-		Coordinate[] coordinates = cascaded_polygons.union().getCoordinates();
-		List<String> result = new ArrayList<String>();
-		for (int i=0;i<coordinates.length-1;i++){
-			result.add(coordinates[i].x+", "+coordinates[i].y);
-		}
-		JavaRDD<String> global_output = sc.parallelize(result).repartition(1);
-		global_output.saveAsTextFile(output_file);
+		JavaRDD<Geometry> poly_rdd_rep = poly_rdd.repartition(1);
+		JavaRDD<String> final_polygons = poly_rdd_rep.mapPartitions(GlobalUnion).repartition(1).distinct();
+
+		final_polygons.saveAsTextFile(output_file);
 	}
 
+	public static FlatMapFunction<Iterator<Geometry>, String> GlobalUnion = new FlatMapFunction<Iterator<Geometry>, String>(){
+		private static final long serialVersionUID = 1L;
+
+		public Iterable<String> call(Iterator<Geometry> local_polygons) {
+			List<Geometry> polygons =  new ArrayList<Geometry>();
+			while (local_polygons.hasNext()){
+				polygons.add(local_polygons.next());
+			}
+			CascadedPolygonUnion cascaded_polygons = new CascadedPolygonUnion(polygons);
+			Coordinate[] coordinates = cascaded_polygons.union().getCoordinates();
+			List<String> coordinates_list = new ArrayList<String>();
+			for (Coordinate c : coordinates){
+				coordinates_list.add(c.x+", "+c.y);
+			}
+			return coordinates_list;
+		}
+	};
+	
 	public static FlatMapFunction<Iterator<String>, Geometry> LocalUnion = new FlatMapFunction<Iterator<String>, Geometry>(){
 		private static final long serialVersionUID = 1L;
 

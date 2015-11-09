@@ -59,7 +59,8 @@ public class farthestPair
     	
     	//List<String> cor_list = Helper.ConvexHull(sc, inputFile);
     	//JavaRDD<String> inputRdd = sc.parallelize(cor_list);
-    	JavaRDD<String> inputRdd = Helper.ConvexHull(sc, inputFile);
+    	@SuppressWarnings("unchecked")
+		JavaRDD<String> inputRdd = Helper.ConvexHull(sc, inputFile);
     	//Get the String points into objects of point class
     	
     	JavaRDD<Point> pointRdd = inputRdd.map(new Function<String, Point>() {
