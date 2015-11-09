@@ -38,7 +38,7 @@ public class farthestPair
     	 * Create the java SparkContext and call the function getFarthestPoints
     	 * getFarthestPoints function computes the pair of points with farthest distances
     	 */
-    	SparkConf conf = new SparkConf().setAppName("FarthestPointinSetofPoints").setMaster("spark://192.168.0.6:7077");
+    	SparkConf conf = new SparkConf().setAppName("FarthestPointinSetofPoints");
     	JavaSparkContext sc = new JavaSparkContext(conf);
     	getFarthestPoints(inputFile,outputDir,sc);
     }
