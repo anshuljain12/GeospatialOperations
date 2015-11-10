@@ -12,55 +12,66 @@ import org.apache.spark.broadcast.Broadcast;
 
 import scala.Tuple2;
 
-/**
- * @author user22
- *
- */
 public class SpatialJoinQuery {
 	public static void main(String[] args) throws IOException {
-		
+
 		if (args.length < 4) {
 			System.out.println("Insufficient number of inputs");
 			return;
 		}
-		String inp1 = args[0]; // Input 1: csv file containing input points or rectangles
+		String inp1 = args[0]; // Input 1: csv file containing input points or
+								// rectangles
 		String inp2 = args[1]; // Input 2: csv file containing query input
-		String out = args[2]+Utils.getCurrentTime();  // Output: File where the result is stored
-        String inputType=args[3]; // InputType: whether Point or rectangle 
+		String out = args[2] + Utils.getCurrentTime(); // Output: File where the
+														// result is stored
+		String inputType = args[3]; // InputType: whether Point or rectangle
 		SparkConf conf = new SparkConf().setAppName("Spatial Join");
 		JavaSparkContext sc = new JavaSparkContext(conf);
-		spatialJoinQuery(inp1, inp2, out, inputType, sc);  //Function which performs spatial join functionality on given input file.
+		spatialJoinQuery(inp1, inp2, out, inputType, sc); // Function which
+															// performs spatial
+															// join
+															// functionality on
+															// given input file.
 		sc.close();
 	}
 
-	
 	/**
-	 * @param spatialObjectPathFile : path of the input1
-	 * @param qryWindowsPath : path of input2
-	 * @param outputPath : path of output
-	 * @param inputType :Inputype = "point" or "rectangle"
-	 * @param sc : Spark context
+	 * @param spatialObjectPathFile
+	 *            : path of the input1
+	 * @param qryWindowsPath
+	 *            : path of input2
+	 * @param outputPath
+	 *            : path of output
+	 * @param inputType
+	 *            :Inputype = "point" or "rectangle"
+	 * @param sc
+	 *            : Spark context
 	 * @return : Boolean
 	 * @throws IOException
 	 */
 	public static boolean spatialJoinQuery(String spatialObjectPathFile, String qryWindowsPath, String outputPath,
 			String inputType, JavaSparkContext sc) throws IOException {
-		
-		JavaRDD<String> queryWindow = sc.textFile(qryWindowsPath);    
-	
-		//Creating RDD for query windows
+
+		JavaRDD<String> queryWindow = sc.textFile(qryWindowsPath);
+
+		// Creating RDD for query windows
 		JavaRDD<Rectangle> rect1 = queryWindow.map(new Function<String, Rectangle>() {
+
+			private static final long serialVersionUID = 1L;
+
 			public Rectangle call(String s) {
 				Float[] fnum = splitingStringToFloat(s, ",");
 				return new Rectangle(fnum[0], fnum[1], fnum[2], fnum[3], fnum[4]);
 			}
 		});
 
-		//if condition to check the inputType 
+		// if condition to check the inputType
 		if (inputType.equalsIgnoreCase("point")) {
 			JavaRDD<String> inputData1 = sc.textFile(spatialObjectPathFile);
-			//Creating RDD for Points
+			// Creating RDD for Points
 			JavaRDD<SpatialPoint> pointsRDD = inputData1.map(new Function<String, SpatialPoint>() {
+				private static final long serialVersionUID = 1L;
+
 				public SpatialPoint call(String s) {
 					Float[] fnum = splitingStringToFloat(s, ",");
 					return new SpatialPoint(fnum[0], fnum[1], fnum[2]);
@@ -69,10 +80,14 @@ public class SpatialJoinQuery {
 			// Broadcast PointsRDD to all nodes
 			Broadcast<List<SpatialPoint>> br1 = sc.broadcast(pointsRDD.collect());
 			final List<SpatialPoint> broad1 = br1.value();
-            
-			// RDD which contains tuples of query windows which contains list of points which lies on/inside the query windows. 
+
+			// RDD which contains tuples of query windows which contains list of
+			// points which lies on/inside the query windows.
 			JavaRDD<Tuple2<Long, List<Long>>> resultantRect1 = rect1
 					.map(new Function<Rectangle, Tuple2<Long, List<Long>>>() {
+
+						private static final long serialVersionUID = 1L;
+
 						public Tuple2<Long, List<Long>> call(Rectangle s) {
 
 							List<Long> PointList = new ArrayList<Long>();
@@ -88,28 +103,35 @@ public class SpatialJoinQuery {
 							return new Tuple2<Long, List<Long>>(l, PointList);
 						}
 					});
-			//Formating the list of tuples into string in order to remove the brackets.
+			// Formating the list of tuples into string in order to remove the
+			// brackets.
 			String formatedString1;
-             
+
 			List<Tuple2<Long, List<Long>>> resultantRect3 = resultantRect1.collect();
 			List<String> strPointsList = new ArrayList<String>();
 			for (Tuple2<Long, List<Long>> res : resultantRect3) {
 				formatedString1 = res.toString().replace("[", "").replace("]", "").replace("(", "").replace(")", "");
 				strPointsList.add(formatedString1);
 			}
-            //Saving into file. 
+			// Saving into file.
 			JavaRDD<String> finalPointResultRDD = sc.parallelize(strPointsList);
 			finalPointResultRDD.sortBy(new Function<String, String>() {
+
+				private static final long serialVersionUID = 1L;
+
 				public String call(String s) {
 					return s;
 				}
 			}, true, 1).repartition(1).saveAsTextFile(outputPath);
 
 		} else if (inputType.equalsIgnoreCase("rectangle")) {
-			
+
 			JavaRDD<String> inputData = sc.textFile(spatialObjectPathFile);
-			//Creating RDD for Rectangle
+			// Creating RDD for Rectangle
 			JavaRDD<Rectangle> rect = inputData.map(new Function<String, Rectangle>() {
+
+				private static final long serialVersionUID = 1L;
+
 				public Rectangle call(String s) {
 					Float[] fnum = splitingStringToFloat(s, ",");
 					return new Rectangle(fnum[0], fnum[1], fnum[2], fnum[3], fnum[4]);
@@ -119,10 +141,14 @@ public class SpatialJoinQuery {
 			// Broadcast RectangleRDD to all nodes
 			Broadcast<List<Rectangle>> br = sc.broadcast(rect.collect());
 			final List<Rectangle> broad = br.value();
-           
-			// RDD which contains tuples of query windows which contains list of points which lies on/inside the query windows. 
+
+			// RDD which contains tuples of query windows which contains list of
+			// points which lies on/inside the query windows.
 			JavaRDD<Tuple2<Long, List<Long>>> resultantRect = rect1
 					.map(new Function<Rectangle, Tuple2<Long, List<Long>>>() {
+
+						private static final long serialVersionUID = 1L;
+
 						public Tuple2<Long, List<Long>> call(Rectangle s) {
 
 							List<Long> rectangleList = new ArrayList<Long>();
@@ -173,8 +199,8 @@ public class SpatialJoinQuery {
 						}
 					});
 
-
-			//Formating the list of tuples into string in order to remove the brackets.
+			// Formating the list of tuples into string in order to remove the
+			// brackets.
 			String formatedString;
 
 			List<Tuple2<Long, List<Long>>> resultantRect2 = resultantRect.collect();
@@ -183,9 +209,12 @@ public class SpatialJoinQuery {
 				formatedString = res.toString().replace("[", "").replace("]", "").replace("(", "").replace(")", "");
 				str.add(formatedString);
 			}
-			 //Saving into file.
+			// Saving into file.
 			JavaRDD<String> finalResultRDD = sc.parallelize(str);
 			finalResultRDD.sortBy(new Function<String, String>() {
+
+				private static final long serialVersionUID = 1L;
+
 				public String call(String s) {
 					return s;
 				}
@@ -195,32 +224,37 @@ public class SpatialJoinQuery {
 		return false;
 
 	}
-    /* The algorithm for validation of Intersection is referred from this link 
-     * http://stackoverflow.com/questions/25830932/how-to-find-if-two-line-segments-intersect-or-not-in-java
-    */
+
+	/*
+	 * The algorithm for validation of Intersection is referred from this link
+	 * http://stackoverflow.com/questions/25830932/how-to-find-if-two-line-
+	 * segments-intersect-or-not-in-java
+	 */
 	public static boolean intersection(SpatialPoint x1, SpatialPoint y1, SpatialPoint x2, SpatialPoint y2) {
 		int validate1 = validateIntersection(x1, y1, x2);
 		int validate2 = validateIntersection(x1, y1, y2);
 		int validate3 = validateIntersection(x2, y2, x1);
 		int validate4 = validateIntersection(x2, y2, y1);
 
-		if (validate1 != validate2){
-			if(validate3 != validate4){
+		if (validate1 != validate2) {
+			if (validate3 != validate4) {
 				return true;
 			}
 		}
 		return false;
 	}
-    //Validate the intersection for given two points
+
+	// Validate the intersection for given two points
 	public static int validateIntersection(SpatialPoint p, SpatialPoint q, SpatialPoint r) {
 		float val = (q.getPointY() - p.getPointY()) * (r.getPointX() - q.getPointX())
 				- (q.getPointX() - p.getPointX()) * (r.getPointY() - q.getPointY());
-		if (val == 0.0){
+		if (val == 0.0) {
 			return 0;
 		}
 		return (val > 0) ? 1 : 2;
 	}
-    // Function to split the given data based on "," separator 
+
+	// Function to split the given data based on "," separator
 	public static Float[] splitingStringToFloat(String inputData, String Separator) {
 		String[] SplitString = inputData.split(Separator);
 		Float[] fnew = new Float[SplitString.length];

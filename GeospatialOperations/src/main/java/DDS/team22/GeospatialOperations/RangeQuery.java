@@ -23,76 +23,79 @@ public class RangeQuery {
 
 	}
 
-	public static boolean SpatialRangeQuery(String InputLocation1,
-			String InputLocation2, String OutputLocation) {
+	public static boolean SpatialRangeQuery(String InputLocation1, String InputLocation2, String OutputLocation) {
 
 		SparkConf sparkConfiguration = new SparkConf().setAppName("RangeQuery");
 		JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration);
-		boolean result = getRangeQuery(InputLocation1, InputLocation2,
-				OutputLocation, sparkContext);
+		boolean result = getRangeQuery(InputLocation1, InputLocation2, OutputLocation, sparkContext);
 		sparkContext.close();
 		return result;
 
 	}
 
-	public static boolean getRangeQuery(String pointsFileLocation,
-			String queryRectangleLocation, String outputFilelocation,
-			JavaSparkContext sc) {
+	public static boolean getRangeQuery(String pointsFileLocation, String queryRectangleLocation,
+			String outputFilelocation, JavaSparkContext sc) {
 
 		JavaRDD<String> inputPoints = sc.textFile(pointsFileLocation);
 		JavaRDD<String> queryWindow = sc.textFile(queryRectangleLocation);
-		
+
 		JavaRDD<SpatialPoint> inputPointsRDD = inputPoints.map(new Function<String, SpatialPoint>() {
+
+			private static final long serialVersionUID = 1L;
+
 			public SpatialPoint call(String s) {
 				Float[] fnum = Utils.splitingStringToFloat(s, ",");
 				return new SpatialPoint(fnum[0], fnum[1], fnum[2]);
 			}
 		});
 
-		JavaRDD<Rectangle> queryRectangleRDD = queryWindow
-				.map(new Function<String, Rectangle>() {
-					public Rectangle call(String s) {
-						Float[] fnum = Utils.splitingStringToFloat(s, ",");
-						return new Rectangle(fnum[0], fnum[1], fnum[2], fnum[3]);
-					}
-				});
-		
-		
-		List<SpatialPoint> inputPointsList = inputPointsRDD.collect();
+		JavaRDD<Rectangle> queryRectangleRDD = queryWindow.map(new Function<String, Rectangle>() {
+
+			private static final long serialVersionUID = 1L;
+
+			public Rectangle call(String s) {
+				Float[] fnum = Utils.splitingStringToFloat(s, ",");
+				return new Rectangle(fnum[0], fnum[1], fnum[2], fnum[3]);
+			}
+		});
+
 		List<Rectangle> queryRectangleList = queryRectangleRDD.collect();
-		final Rectangle queryRectangle  = queryRectangleList.get(0);
-		
+		final Rectangle queryRectangle = queryRectangleList.get(0);
+
 		JavaRDD<Long> resultPointRDD = inputPointsRDD.map(new Function<SpatialPoint, Long>() {
-					public Long call(SpatialPoint s) {
-						
-						if(queryRectangle.findIfPointIsInside(s))
-						{
-							float f = s.getId();
-							long l= Math.round(f);
-							return l;
-						}
-						else
-						return -1L;
-						
-					}
-				});
-		
-		JavaRDD<Long> filteredResultPointRDD = resultPointRDD.filter(new Function<Long, Boolean>(){
-			public Boolean call(Long l){
-				
-				if(l != -1L)
-				{
+
+			private static final long serialVersionUID = 1L;
+
+			public Long call(SpatialPoint s) {
+
+				if (queryRectangle.findIfPointIsInside(s)) {
+					float f = s.getId();
+					long l = Math.round(f);
+					return l;
+				} else
+					return -1L;
+
+			}
+		});
+
+		JavaRDD<Long> filteredResultPointRDD = resultPointRDD.filter(new Function<Long, Boolean>() {
+
+			private static final long serialVersionUID = 1L;
+
+			public Boolean call(Long l) {
+
+				if (l != -1L) {
 					return true;
-				}
-				else{
+				} else {
 					return false;
 				}
 			}
-		});	
-		
-		
-		
+		});
+
 		filteredResultPointRDD.sortBy(new Function<Long, Long>() {
+
+			private static final long serialVersionUID = 1L;
+
 			public Long call(Long s) {
 				return s;
 			}
