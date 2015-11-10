@@ -2,10 +2,11 @@ package DDS.team22.GeospatialOperations;
 
 public class SpatialPoint implements java.io.Serializable {
 
+	private static final long serialVersionUID = 1L;
 	float pointX;
 	float pointY;
 	float id;
-	
+
 	public float getId() {
 		return id;
 	}
@@ -14,17 +15,16 @@ public class SpatialPoint implements java.io.Serializable {
 		this.id = id;
 	}
 
-	public SpatialPoint(float id, float pointX, float pointY){
+	public SpatialPoint(float id, float pointX, float pointY) {
 		this.id = id;
 		this.pointX = pointX;
 		this.pointY = pointY;
 	}
-	
-	public String toString()
-	{
-		return ("("+this.pointX+", "+this.pointY+")");
+
+	public String toString() {
+		return ("(" + this.pointX + ", " + this.pointY + ")");
 	}
-	
+
 	public float getPointX() {
 		return pointX;
 	}
@@ -41,10 +41,10 @@ public class SpatialPoint implements java.io.Serializable {
 		this.pointY = pointY;
 	}
 
-	public SpatialPoint(float pointX, float pointY){
-		
+	public SpatialPoint(float pointX, float pointY) {
+
 		this.pointX = pointX;
 		this.pointY = pointY;
-		
+
 	}
 }

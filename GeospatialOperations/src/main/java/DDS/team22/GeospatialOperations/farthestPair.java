@@ -34,22 +34,19 @@ public class farthestPair {
 
 	}
 
-	public static void farthestPoints(String inputFile, String outputDir)
-			throws IOException {
+	public static void farthestPoints(String inputFile, String outputDir) throws IOException {
 		/*
 		 * Create the java SparkContext and call the function getFarthestPoints
 		 * getFarthestPoints function computes the pair of points with farthest
 		 * distances
 		 */
-		SparkConf conf = new SparkConf()
-				.setAppName("FarthestPointinSetofPoints");
+		SparkConf conf = new SparkConf().setAppName("FarthestPointinSetofPoints");
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		getFarthestPoints(inputFile, outputDir, sc);
 	}
 
 	@SuppressWarnings("serial")
-	public static void getFarthestPoints(String inputFile, String outputDir,
-			JavaSparkContext sc) throws IOException {
+	public static void getFarthestPoints(String inputFile, String outputDir, JavaSparkContext sc) throws IOException {
 		/*
 		 * Read the input file into RDD and transform the values into Points
 		 * Take cartesian product of rdd with itself to get Pair of points Rdd
@@ -61,7 +58,6 @@ public class farthestPair {
 
 		// List<String> cor_list = Helper.ConvexHull(sc, inputFile);
 		// JavaRDD<String> inputRdd = sc.parallelize(cor_list);
-		@SuppressWarnings("unchecked")
 		JavaRDD<String> inputRdd = Helper.ConvexHull(sc, inputFile);
 		// Get the String points into objects of point class
 
@@ -84,24 +80,21 @@ public class farthestPair {
 		 * pair of points
 		 */
 
-		JavaPairRDD<Double, PairOfPoints> resultingRdd = cartesian.mapToPair(
-				new PairFunction<Tuple2<Point, Point>, Double, PairOfPoints>() {
-					public Tuple2<Double, PairOfPoints> call(
-							Tuple2<Point, Point> v1) {
+		JavaPairRDD<Double, PairOfPoints> resultingRdd = cartesian
+				.mapToPair(new PairFunction<Tuple2<Point, Point>, Double, PairOfPoints>() {
+					public Tuple2<Double, PairOfPoints> call(Tuple2<Point, Point> v1) {
 						double distance;
 						Point p1 = v1._1();
 						Point p2 = v1._2();
 						distance = Point.getDistPairOfPoints(p1, p2);
-						return new Tuple2<Double, PairOfPoints>(distance,
-								new PairOfPoints(p1, p2));
+						return new Tuple2<Double, PairOfPoints>(distance, new PairOfPoints(p1, p2));
 
 					}
 				}).cache();
 
 		// Sort the rdd by key in descending order to get maximum distance
 
-		JavaPairRDD<Double, PairOfPoints> farthestPair = resultingRdd
-				.sortByKey(false);
+		JavaPairRDD<Double, PairOfPoints> farthestPair = resultingRdd.sortByKey(false);
 
 		// Get the first line of the rdd with is the farthest pair of points
 
@@ -123,10 +116,8 @@ public class farthestPair {
 		}
 		// Parse Objects and Create a rdd with the farthest pair of points and
 		// saves it into output directory
-		sc.parallelize(pts).distinct().
-		repartition(1).map(PointDouble.ToPointDouble).
-		mapPartitions(PointDouble.SortRDD).map(PointDouble.PointToString).
-		saveAsTextFile(outputDir);
+		sc.parallelize(pts).distinct().repartition(1).map(PointDouble.ToPointDouble).mapPartitions(PointDouble.SortRDD)
+				.map(PointDouble.PointToString).saveAsTextFile(outputDir);
 
 	}
 
