@@ -49,7 +49,8 @@ public class Rectangle implements java.io.Serializable {
 		this.id = id;
 	}
 
-	public Rectangle(float xLeftLower, float yLeftLower, float xRightUpper, float yRightUpper) {
+	public Rectangle(float xLeftLower, float yLeftLower, float xRightUpper,
+			float yRightUpper) {
 
 		leftLower = new SpatialPoint(xLeftLower, yLeftLower);
 		rightUpper = new SpatialPoint(xRightUpper, yRightUpper);
@@ -59,7 +60,8 @@ public class Rectangle implements java.io.Serializable {
 
 	}
 
-	public Rectangle(float id, float xLeftLower, float yLeftLower, float xRightUpper, float yRightUpper) {
+	public Rectangle(float id, float xLeftLower, float yLeftLower,
+			float xRightUpper, float yRightUpper) {
 
 		this.id = id;
 		if (xLeftLower > xRightUpper) {
@@ -83,9 +85,13 @@ public class Rectangle implements java.io.Serializable {
 		float pointX = point.pointX;
 		float pointY = point.pointY;
 
-		if (pointX > this.leftLower.pointX && pointY > this.leftLower.pointY && pointX > this.leftUpper.pointX
-				&& pointY < this.leftUpper.pointY && pointX < this.rightLower.pointX && pointY > this.rightLower.pointY
-				&& pointX < this.rightUpper.pointX && pointY < this.rightUpper.pointY) {
+		if (pointX > this.leftLower.pointX && pointY > this.leftLower.pointY
+				&& pointX > this.leftUpper.pointX
+				&& pointY < this.leftUpper.pointY
+				&& pointX < this.rightLower.pointX
+				&& pointY > this.rightLower.pointY
+				&& pointX < this.rightUpper.pointX
+				&& pointY < this.rightUpper.pointY) {
 
 			return true;
 
@@ -95,13 +101,43 @@ public class Rectangle implements java.io.Serializable {
 
 	}
 
+	public boolean RectangleEquals(Rectangle rectangle) {
+		if (rectangle.leftLower.pointX == this.leftLower.pointX
+				&& rectangle.leftLower.pointY == this.leftLower.pointY
+				&& rectangle.rightUpper.pointX == this.rightUpper.pointX
+				&& rectangle.rightUpper.pointY == this.rightUpper.pointY) {
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+
+	/*
+	 * public boolean findIfPointIsOnPoint(SpatialPoint point) { float pointX =
+	 * point.pointX; float pointY = point.pointY;
+	 * 
+	 * if (pointX == this.leftLower.pointX && pointY == this.leftLower.pointY &&
+	 * pointX == this.leftUpper.pointX && pointY == this.leftUpper.pointY &&
+	 * pointX == this.rightLower.pointX && pointY == this.rightLower.pointY &&
+	 * pointX == this.rightUpper.pointX && pointY == this.rightUpper.pointY) {
+	 * 
+	 * return true;
+	 * 
+	 * } else { return false; }
+	 * 
+	 * }
+	 */
 	public boolean findIfPointIsInsideforPoint(SpatialPoint point) {
 		float pointX = point.pointX;
 		float pointY = point.pointY;
 
-		if (pointX >= this.leftLower.pointX && pointY >= this.leftLower.pointY && pointX >= this.leftUpper.pointX
-				&& pointY <= this.leftUpper.pointY && pointX <= this.rightLower.pointX
-				&& pointY >= this.rightLower.pointY && pointX <= this.rightUpper.pointX
+		if (pointX >= this.leftLower.pointX && pointY >= this.leftLower.pointY
+				&& pointX >= this.leftUpper.pointX
+				&& pointY <= this.leftUpper.pointY
+				&& pointX <= this.rightLower.pointX
+				&& pointY >= this.rightLower.pointY
+				&& pointX <= this.rightUpper.pointX
 				&& pointY <= this.rightUpper.pointY) {
 
 			return true;
@@ -113,6 +149,7 @@ public class Rectangle implements java.io.Serializable {
 	}
 
 	public String toString() {
-		return leftLower + ", " + rightLower + ", " + rightUpper + ", " + leftUpper;
+		return leftLower + ", " + rightLower + ", " + rightUpper + ", "
+				+ leftUpper;
 	}
 }

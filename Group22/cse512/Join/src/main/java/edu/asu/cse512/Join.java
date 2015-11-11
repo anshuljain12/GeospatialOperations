@@ -25,7 +25,9 @@ public class Join {
 		String out = args[2] + Utils.getCurrentTime(); // Output: File where the
 														// result is stored
 		String inputType = args[3]; // InputType: whether Point or rectangle
-		SparkConf conf = new SparkConf().setAppName("Group22-Spatial Join-"+inputType);
+
+		SparkConf conf = new SparkConf().setAppName("Group22-Spatial Join-"
+				+ inputType);
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		spatialJoinQuery(inp1, inp2, out, inputType, sc); // Function which
 															// performs spatial
@@ -49,36 +51,41 @@ public class Join {
 	 * @return : Boolean
 	 * @throws IOException
 	 */
-	public static boolean spatialJoinQuery(String spatialObjectPathFile, String qryWindowsPath, String outputPath,
-			String inputType, JavaSparkContext sc) throws IOException {
+	public static boolean spatialJoinQuery(String spatialObjectPathFile,
+			String qryWindowsPath, String outputPath, String inputType,
+			JavaSparkContext sc) throws IOException {
 
 		JavaRDD<String> queryWindow = sc.textFile(qryWindowsPath);
 
 		// Creating RDD for query windows
-		JavaRDD<Rectangle> rect1 = queryWindow.map(new Function<String, Rectangle>() {
+		JavaRDD<Rectangle> rect1 = queryWindow
+				.map(new Function<String, Rectangle>() {
 
-			private static final long serialVersionUID = 1L;
+					private static final long serialVersionUID = 1L;
 
-			public Rectangle call(String s) {
-				Float[] fnum = splitingStringToFloat(s, ",");
-				return new Rectangle(fnum[0], fnum[1], fnum[2], fnum[3], fnum[4]);
-			}
-		});
+					public Rectangle call(String s) {
+						Float[] fnum = splitingStringToFloat(s, ",");
+						return new Rectangle(fnum[0], fnum[1], fnum[2],
+								fnum[3], fnum[4]);
+					}
+				});
 
 		// if condition to check the inputType
 		if (inputType.equalsIgnoreCase("point")) {
 			JavaRDD<String> inputData1 = sc.textFile(spatialObjectPathFile);
 			// Creating RDD for Points
-			JavaRDD<SpatialPoint> pointsRDD = inputData1.map(new Function<String, SpatialPoint>() {
-				private static final long serialVersionUID = 1L;
+			JavaRDD<SpatialPoint> pointsRDD = inputData1
+					.map(new Function<String, SpatialPoint>() {
+						private static final long serialVersionUID = 1L;
 
-				public SpatialPoint call(String s) {
-					Float[] fnum = splitingStringToFloat(s, ",");
-					return new SpatialPoint(fnum[0], fnum[1], fnum[2]);
-				}
-			});
+						public SpatialPoint call(String s) {
+							Float[] fnum = splitingStringToFloat(s, ",");
+							return new SpatialPoint(fnum[0], fnum[1], fnum[2]);
+						}
+					});
 			// Broadcast PointsRDD to all nodes
-			Broadcast<List<SpatialPoint>> br1 = sc.broadcast(pointsRDD.collect());
+			Broadcast<List<SpatialPoint>> br1 = sc.broadcast(pointsRDD
+					.collect());
 			final List<SpatialPoint> broad1 = br1.value();
 
 			// RDD which contains tuples of query windows which contains list of
@@ -107,10 +114,13 @@ public class Join {
 			// brackets.
 			String formatedString1;
 
-			List<Tuple2<Long, List<Long>>> resultantRect3 = resultantRect1.collect();
+			List<Tuple2<Long, List<Long>>> resultantRect3 = resultantRect1
+					.collect();
 			List<String> strPointsList = new ArrayList<String>();
 			for (Tuple2<Long, List<Long>> res : resultantRect3) {
-				formatedString1 = res.toString().replace("[", "").replace("]", "").replace("(", "").replace(")", "").replace(" ", "");
+				formatedString1 = res.toString().replace("[", "")
+						.replace("]", "").replace("(", "").replace(")", "")
+						.replace(" ", "");
 				strPointsList.add(formatedString1);
 			}
 			// Saving into file.
@@ -128,15 +138,17 @@ public class Join {
 
 			JavaRDD<String> inputData = sc.textFile(spatialObjectPathFile);
 			// Creating RDD for Rectangle
-			JavaRDD<Rectangle> rect = inputData.map(new Function<String, Rectangle>() {
+			JavaRDD<Rectangle> rect = inputData
+					.map(new Function<String, Rectangle>() {
 
-				private static final long serialVersionUID = 1L;
+						private static final long serialVersionUID = 1L;
 
-				public Rectangle call(String s) {
-					Float[] fnum = splitingStringToFloat(s, ",");
-					return new Rectangle(fnum[0], fnum[1], fnum[2], fnum[3], fnum[4]);
-				}
-			});
+						public Rectangle call(String s) {
+							Float[] fnum = splitingStringToFloat(s, ",");
+							return new Rectangle(fnum[0], fnum[1], fnum[2],
+									fnum[3], fnum[4]);
+						}
+					});
 
 			// Broadcast RectangleRDD to all nodes
 			Broadcast<List<Rectangle>> br = sc.broadcast(rect.collect());
@@ -154,28 +166,68 @@ public class Join {
 							List<Long> rectangleList = new ArrayList<Long>();
 							for (Rectangle rec : broad) {
 
-								if (s.findIfPointIsInside(rec.leftLower) || s.findIfPointIsInside(rec.leftUpper)
+								if (s.findIfPointIsInside(rec.leftLower)
+										|| s.findIfPointIsInside(rec.leftUpper)
 										|| s.findIfPointIsInside(rec.rightLower)
 										|| s.findIfPointIsInside(rec.rightUpper)) {
 									float f = rec.getId();
 									long l = Math.round(f);
 									rectangleList.add(l);
-								} else if (intersection(s.leftLower, s.rightLower, rec.leftUpper, rec.leftLower)
-										|| intersection(s.leftLower, s.rightLower, rec.rightLower, rec.leftLower)
-										|| intersection(s.leftLower, s.rightLower, rec.rightUpper, rec.rightLower)
-										|| intersection(s.leftLower, s.rightLower, rec.rightUpper, rec.leftUpper)
-										|| intersection(s.leftLower, s.leftUpper, rec.leftUpper, rec.leftLower)
-										|| intersection(s.leftLower, s.leftUpper, rec.rightLower, rec.leftLower)
-										|| intersection(s.leftLower, s.leftUpper, rec.rightUpper, rec.rightLower)
-										|| intersection(s.leftLower, s.leftUpper, rec.rightUpper, rec.leftUpper)
-										|| intersection(s.rightUpper, s.rightLower, rec.leftUpper, rec.leftLower)
-										|| intersection(s.rightUpper, s.rightLower, rec.rightLower, rec.leftLower)
-										|| intersection(s.rightUpper, s.rightLower, rec.rightUpper, rec.rightLower)
-										|| intersection(s.rightUpper, s.rightLower, rec.rightUpper, rec.leftUpper)
-										|| intersection(s.rightUpper, s.leftUpper, rec.leftUpper, rec.leftLower)
-										|| intersection(s.rightUpper, s.leftUpper, rec.rightLower, rec.leftLower)
-										|| intersection(s.rightUpper, s.leftUpper, rec.rightUpper, rec.rightLower)
-										|| intersection(s.rightUpper, s.leftUpper, rec.rightUpper, rec.leftUpper)) {
+
+								} else if (s.RectangleEquals(rec)) {
+									float f = rec.getId();
+									long l = Math.round(f);
+									rectangleList.add(l);
+								}
+
+								else if (intersection(s.leftLower,
+										s.rightLower, rec.leftUpper,
+										rec.leftLower)
+										|| intersection(s.leftLower,
+												s.rightLower, rec.rightLower,
+												rec.leftLower)
+										|| intersection(s.leftLower,
+												s.rightLower, rec.rightUpper,
+												rec.rightLower)
+										|| intersection(s.leftLower,
+												s.rightLower, rec.rightUpper,
+												rec.leftUpper)
+										|| intersection(s.leftLower,
+												s.leftUpper, rec.leftUpper,
+												rec.leftLower)
+										|| intersection(s.leftLower,
+												s.leftUpper, rec.rightLower,
+												rec.leftLower)
+										|| intersection(s.leftLower,
+												s.leftUpper, rec.rightUpper,
+												rec.rightLower)
+										|| intersection(s.leftLower,
+												s.leftUpper, rec.rightUpper,
+												rec.leftUpper)
+										|| intersection(s.rightUpper,
+												s.rightLower, rec.leftUpper,
+												rec.leftLower)
+										|| intersection(s.rightUpper,
+												s.rightLower, rec.rightLower,
+												rec.leftLower)
+										|| intersection(s.rightUpper,
+												s.rightLower, rec.rightUpper,
+												rec.rightLower)
+										|| intersection(s.rightUpper,
+												s.rightLower, rec.rightUpper,
+												rec.leftUpper)
+										|| intersection(s.rightUpper,
+												s.leftUpper, rec.leftUpper,
+												rec.leftLower)
+										|| intersection(s.rightUpper,
+												s.leftUpper, rec.rightLower,
+												rec.leftLower)
+										|| intersection(s.rightUpper,
+												s.leftUpper, rec.rightUpper,
+												rec.rightLower)
+										|| intersection(s.rightUpper,
+												s.leftUpper, rec.rightUpper,
+												rec.leftUpper)) {
 									// System.out.println("hey!!");
 									float f1 = rec.getId();
 									long l1 = Math.round(f1);
@@ -183,7 +235,8 @@ public class Join {
 
 								}
 
-								if (rec.findIfPointIsInside(s.leftLower) && rec.findIfPointIsInside(s.leftUpper)
+								if (rec.findIfPointIsInside(s.leftLower)
+										&& rec.findIfPointIsInside(s.leftUpper)
 										&& rec.findIfPointIsInside(s.rightLower)
 										&& rec.findIfPointIsInside(s.rightUpper)) {
 									// System.out.println(rec.id);
@@ -194,7 +247,8 @@ public class Join {
 							}
 							float f = s.getId();
 							long l = Math.round(f);
-							return new Tuple2<Long, List<Long>>(l, rectangleList);
+							return new Tuple2<Long, List<Long>>(l,
+									rectangleList);
 
 						}
 					});
@@ -203,10 +257,13 @@ public class Join {
 			// brackets.
 			String formatedString;
 
-			List<Tuple2<Long, List<Long>>> resultantRect2 = resultantRect.collect();
+			List<Tuple2<Long, List<Long>>> resultantRect2 = resultantRect
+					.collect();
 			List<String> str = new ArrayList<String>();
 			for (Tuple2<Long, List<Long>> res : resultantRect2) {
-				formatedString = res.toString().replace("[", "").replace("]", "").replace("(", "").replace(")", "").replace(" ", "");
+				formatedString = res.toString().replace("[", "")
+						.replace("]", "").replace("(", "").replace(")", "")
+						.replace(" ", "");
 				str.add(formatedString);
 			}
 			// Saving into file.
@@ -230,7 +287,8 @@ public class Join {
 	 * http://stackoverflow.com/questions/25830932/how-to-find-if-two-line-
 	 * segments-intersect-or-not-in-java
 	 */
-	public static boolean intersection(SpatialPoint x1, SpatialPoint y1, SpatialPoint x2, SpatialPoint y2) {
+	public static boolean intersection(SpatialPoint x1, SpatialPoint y1,
+			SpatialPoint x2, SpatialPoint y2) {
 		int validate1 = validateIntersection(x1, y1, x2);
 		int validate2 = validateIntersection(x1, y1, y2);
 		int validate3 = validateIntersection(x2, y2, x1);
@@ -245,9 +303,12 @@ public class Join {
 	}
 
 	// Validate the intersection for given two points
-	public static int validateIntersection(SpatialPoint p, SpatialPoint q, SpatialPoint r) {
-		float val = (q.getPointY() - p.getPointY()) * (r.getPointX() - q.getPointX())
-				- (q.getPointX() - p.getPointX()) * (r.getPointY() - q.getPointY());
+	public static int validateIntersection(SpatialPoint p, SpatialPoint q,
+			SpatialPoint r) {
+		float val = (q.getPointY() - p.getPointY())
+				* (r.getPointX() - q.getPointX())
+				- (q.getPointX() - p.getPointX())
+				* (r.getPointY() - q.getPointY());
 		if (val == 0.0) {
 			return 0;
 		}
@@ -255,7 +316,8 @@ public class Join {
 	}
 
 	// Function to split the given data based on "," separator
-	public static Float[] splitingStringToFloat(String inputData, String Separator) {
+	public static Float[] splitingStringToFloat(String inputData,
+			String Separator) {
 		String[] SplitString = inputData.split(Separator);
 		Float[] fnew = new Float[SplitString.length];
 		for (int i = 0; i < SplitString.length; i++) {
