@@ -29,7 +29,7 @@ public class FarthestPair {
 			return;
 		}
 		String inputFile = args[0];
-		String outputDir = args[1] + Utils.getCurrentTime();
+		String outputDir = args[1];
 		farthestPoints(inputFile, outputDir);
 
 	}
@@ -114,7 +114,7 @@ public class FarthestPair {
 					+ Float.toString(pp.get(i).getPoint()[1].ycord()));
 
 		}
-		// Parse Objects and Create a rdd with the farthest pair of points and
+		// Parse Objects and Create a rdd with the farthest pair of points, sort the output and
 		// saves it into output directory
 		sc.parallelize(pts).distinct().repartition(1).map(PointDouble.ToPointDouble).mapPartitions(PointDouble.SortRDD)
 				.map(PointDouble.PointToString).saveAsTextFile(outputDir);

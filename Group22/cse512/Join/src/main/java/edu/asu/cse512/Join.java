@@ -22,7 +22,7 @@ public class Join {
 		String inp1 = args[0]; // Input 1: csv file containing input points or
 								// rectangles
 		String inp2 = args[1]; // Input 2: csv file containing query input
-		String out = args[2] + Utils.getCurrentTime(); // Output: File where the
+		String out = args[2]; // Output: File where the
 														// result is stored
 		String inputType = args[3]; // InputType: whether Point or rectangle
 

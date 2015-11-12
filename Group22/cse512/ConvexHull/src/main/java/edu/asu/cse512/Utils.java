@@ -25,7 +25,7 @@ public class Utils {
 	}
 
 }
-
+/* Class To store x and y co ordinates*/
 class PointDouble implements Serializable, Comparable<PointDouble> {
 
 	private static final long serialVersionUID = 1L;
@@ -82,7 +82,7 @@ class PointDouble implements Serializable, Comparable<PointDouble> {
 		} else
 			return -1;
 	}
-
+	/*Converting string to Point Object*/
 	public static Function<String, PointDouble> ToPointDouble = new Function<String, PointDouble>() {
 		private static final long serialVersionUID = 1L;
 
@@ -94,7 +94,8 @@ class PointDouble implements Serializable, Comparable<PointDouble> {
 			return p;
 		}
 	};
-
+	
+	/* Sorting the JavaRDD*/
 	public static FlatMapFunction<Iterator<PointDouble>, PointDouble> SortRDD = new FlatMapFunction<Iterator<PointDouble>, PointDouble>() {
 
 		private static final long serialVersionUID = 1L;
@@ -110,6 +111,7 @@ class PointDouble implements Serializable, Comparable<PointDouble> {
 		}
 	};
 
+	/* Converting Point object To String*/
 	public static Function<PointDouble, String> PointToString = new Function<PointDouble, String>() {
 
 		private static final long serialVersionUID = 1L;

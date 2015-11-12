@@ -31,60 +31,73 @@ public class ClosestPair {
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		JavaRDD<String> logData = sc.textFile(logFile);
 
+		// To find local closest pair
 		System.out.println("Local closest pair");
-		JavaRDD<PointDouble> lines = logData.mapPartitions(new FlatMapFunction<Iterator<String>, PointDouble>() {
+		JavaRDD<PointDouble> lines = logData
+				.mapPartitions(new FlatMapFunction<Iterator<String>, PointDouble>() {
 
-			private static final long serialVersionUID = 1L;
+					private static final long serialVersionUID = 1L;
 
-			public Iterable<PointDouble> call(Iterator<String> arg0) throws Exception {
+					public Iterable<PointDouble> call(Iterator<String> arg0)
+							throws Exception {
 
-				ClosestPair closestPairObj = new ClosestPair();
+						ClosestPair closestPairObj = new ClosestPair();
 
-				List<PointDouble> points = new ArrayList<PointDouble>();
-				List<PointDouble> finalClosestPair = new ArrayList<PointDouble>();
-				List<Coordinate> coordinates = new ArrayList<Coordinate>();
-				GeometryFactory geometryFactory = new GeometryFactory();
+						List<PointDouble> points = new ArrayList<PointDouble>();
+						List<PointDouble> finalClosestPair = new ArrayList<PointDouble>();
+						List<Coordinate> coordinates = new ArrayList<Coordinate>();
+						GeometryFactory geometryFactory = new GeometryFactory();
 
-				while (arg0.hasNext()) {
-					String str = arg0.next();
-					String[] array = str.split(",");
+						while (arg0.hasNext()) {
+							String str = arg0.next();
+							String[] array = str.split(",");
 
-					PointDouble point = new PointDouble();
-					point.setxCoordinate(Double.parseDouble(array[0]));
-					point.setyCoordinate(Double.parseDouble(array[1]));
-					points.add(point);
+							PointDouble point = new PointDouble();
+							point.setxCoordinate(Double.parseDouble(array[0]));
+							point.setyCoordinate(Double.parseDouble(array[1]));
+							points.add(point);
 
-					Coordinate coordinate = new Coordinate(Double.parseDouble(array[0]), Double.parseDouble(array[1]));
-					coordinates.add(coordinate);
-				}
-				// Find Convex Hull
-				ConvexHull convexHull = new ConvexHull(coordinates.toArray(new Coordinate[coordinates.size()]),
-						geometryFactory);
-				Geometry geometry = convexHull.getConvexHull();
-				List<Coordinate> localConvexHull = Arrays.asList(geometry.getCoordinates());
-				Set<Coordinate> sett = new HashSet<Coordinate>(localConvexHull);
-				ClosestPairOfPoints closestPair = closestPairObj.closest(points);
+							Coordinate coordinate = new Coordinate(Double
+									.parseDouble(array[0]), Double
+									.parseDouble(array[1]));
+							coordinates.add(coordinate);
+						}
+						// Find Convex Hull to check the points that are on the
+						// convex hull.
+						ConvexHull convexHull = new ConvexHull(coordinates
+								.toArray(new Coordinate[coordinates.size()]),
+								geometryFactory);
+						Geometry geometry = convexHull.getConvexHull();
+						List<Coordinate> localConvexHull = Arrays
+								.asList(geometry.getCoordinates());
+						Set<Coordinate> sett = new HashSet<Coordinate>(
+								localConvexHull);
+						ClosestPairOfPoints closestPair = closestPairObj
+								.closest(points);
 
-				if (!sett.contains(new Coordinate(closestPair.closestPoint1.getxCoordinate(),
-						closestPair.closestPoint1.getyCoordinate())))
-					finalClosestPair.add(closestPair.closestPoint1);
-				if (!sett.contains(new Coordinate(closestPair.closestPoint2.getxCoordinate(),
-						closestPair.closestPoint2.getyCoordinate())))
-					finalClosestPair.add(closestPair.closestPoint2);
+						if (!sett.contains(new Coordinate(
+								closestPair.closestPoint1.getxCoordinate(),
+								closestPair.closestPoint1.getyCoordinate())))
+							finalClosestPair.add(closestPair.closestPoint1);
+						if (!sett.contains(new Coordinate(
+								closestPair.closestPoint2.getxCoordinate(),
+								closestPair.closestPoint2.getyCoordinate())))
+							finalClosestPair.add(closestPair.closestPoint2);
 
-				for (Coordinate coordinate2 : sett) {
+						for (Coordinate coordinate2 : sett) {
 
-					PointDouble pointNew = new PointDouble();
-					pointNew.setxCoordinate(coordinate2.x);
-					pointNew.setyCoordinate(coordinate2.y);
+							PointDouble pointNew = new PointDouble();
+							pointNew.setxCoordinate(coordinate2.x);
+							pointNew.setyCoordinate(coordinate2.y);
 
-					finalClosestPair.add(pointNew);
-				}
+							finalClosestPair.add(pointNew);
+						}
 
-				return finalClosestPair;
-			}
-		});
+						return finalClosestPair;
+					}
+				});
 
+		// To find global closest pair
 		System.out.println("Global closest pair");
 		JavaRDD<PointDouble> localPointsList = lines.repartition(1);
 		JavaRDD<PointDouble> FinalClosetPairList = localPointsList
@@ -92,7 +105,8 @@ public class ClosestPair {
 
 					private static final long serialVersionUID = 1L;
 
-					public Iterable<PointDouble> call(Iterator<PointDouble> arg0) throws Exception {
+					public Iterable<PointDouble> call(Iterator<PointDouble> arg0)
+							throws Exception {
 
 						ClosestPair closestPairObj = new ClosestPair();
 
@@ -101,11 +115,14 @@ public class ClosestPair {
 							listPoints.add(arg0.next());
 						}
 
-						ClosestPairOfPoints finalClosetstPairOfPoints = closestPairObj.closest(listPoints);
+						ClosestPairOfPoints finalClosetstPairOfPoints = closestPairObj
+								.closest(listPoints);
 
 						List<PointDouble> geoSpatialClosestPoints = new ArrayList<PointDouble>();
-						geoSpatialClosestPoints.add(finalClosetstPairOfPoints.closestPoint1);
-						geoSpatialClosestPoints.add(finalClosetstPairOfPoints.closestPoint2);
+						geoSpatialClosestPoints
+								.add(finalClosetstPairOfPoints.closestPoint1);
+						geoSpatialClosestPoints
+								.add(finalClosetstPairOfPoints.closestPoint2);
 
 						return geoSpatialClosestPoints;
 					}
@@ -113,9 +130,10 @@ public class ClosestPair {
 
 		JavaRDD<PointDouble> points = FinalClosetPairList.repartition(1);
 
-		String output_folder = args[1] + Utils.getCurrentTime();
+		String output_folder = args[1];
 
-		JavaRDD<PointDouble> point_rdd = points.mapPartitions(PointDouble.SortRDD);
+		JavaRDD<PointDouble> point_rdd = points
+				.mapPartitions(PointDouble.SortRDD);
 
 		JavaRDD<String> result = point_rdd.map(PointDouble.PointToString);
 
@@ -123,33 +141,14 @@ public class ClosestPair {
 		sc.close();
 	}
 
-	public ClosestPairOfPoints bruteForce(List<PointDouble> listOfPoints) {
-
-		ClosestPairOfPoints closestPairDetails = new ClosestPairOfPoints();
-
-		int listSize = listOfPoints.size();
-		for (int i = 0; i < listSize; i++) {
-			for (int j = i + 1; j < listSize; j++) {
-				if (euclideanDistance(listOfPoints.get(i), listOfPoints.get(j)) != 0) {
-					if (euclideanDistance(listOfPoints.get(i),
-							listOfPoints.get(j)) < closestPairDetails.shortestDistance) {
-						closestPairDetails.closestPoint1 = listOfPoints.get(i);
-						closestPairDetails.closestPoint2 = listOfPoints.get(j);
-						closestPairDetails.shortestDistance = euclideanDistance(listOfPoints.get(i),
-								listOfPoints.get(j));
-					}
-				}
-			}
-		}
-		return closestPairDetails;
-	}
-
+	// To find out the distance between two points in the whole set of points.
 	public double euclideanDistance(PointDouble point1, PointDouble point2) {
 		double xDistance = point1.getxCoordinate() - point2.getxCoordinate();
 		double yDistance = point1.getyCoordinate() - point2.getyCoordinate();
 		return (Math.sqrt((xDistance * xDistance) + (yDistance * yDistance)));
 	}
 
+	// An to get the closest pair details in the given set.
 	public ClosestPairOfPoints closest(List<PointDouble> listOfPoints) {
 		ClosestPairOfPoints closestPairDetails = new ClosestPairOfPoints();
 		int listSize = listOfPoints.size();
@@ -158,7 +157,8 @@ public class ClosestPair {
 				if (euclideanDistance(listOfPoints.get(i), listOfPoints.get(j)) < closestPairDetails.shortestDistance) {
 					closestPairDetails.closestPoint1 = listOfPoints.get(i);
 					closestPairDetails.closestPoint2 = listOfPoints.get(j);
-					closestPairDetails.shortestDistance = euclideanDistance(listOfPoints.get(i), listOfPoints.get(j));
+					closestPairDetails.shortestDistance = euclideanDistance(
+							listOfPoints.get(i), listOfPoints.get(j));
 				}
 			}
 		}
@@ -167,6 +167,7 @@ public class ClosestPair {
 
 }
 
+// class to save the details of the closest pair
 class ClosestPairOfPoints implements Serializable {
 	private static final long serialVersionUID = 1L;
 
