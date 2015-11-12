@@ -17,12 +17,12 @@ public class convexHull {
 			return;
 		}
 
-		String output_folder = args[1] + Utils.getCurrentTime();
+		String output_folder = args[1];
 		JavaRDD<String> global_result = Helper.ConvexHull(sc, args[0]);
-		JavaRDD<PointDouble> double_points = global_result.distinct().map(PointDouble.ToPointDouble);
-		JavaRDD<PointDouble> all_double_points = double_points.mapPartitions(PointDouble.SortRDD);
-		global_result = all_double_points.map(PointDouble.PointToString);
-		global_result.saveAsTextFile(output_folder);
+		JavaRDD<PointDouble> double_points = global_result.distinct().map(PointDouble.ToPointDouble);// makings sure we have distinct points
+		JavaRDD<PointDouble> all_double_points = double_points.mapPartitions(PointDouble.SortRDD);// sorting the output
+		global_result = all_double_points.map(PointDouble.PointToString);// converting JavaRDD object to JavaRDD string.
+		global_result.saveAsTextFile(output_folder); // saving the output to a text file.
 		sc.close();
 	}
 }
