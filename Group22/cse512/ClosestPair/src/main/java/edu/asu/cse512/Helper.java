@@ -20,12 +20,12 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 public class Helper {
 
 	public static JavaRDD<String> ConvexHull(JavaSparkContext sc, String input_file) throws IOException {
-		JavaRDD<String> points = sc.textFile(input_file);
-		JavaRDD<Coordinate> local = Helper.calculateConvexHull(points);
+		JavaRDD<String> points = sc.textFile(input_file); //Reading input file.
+		JavaRDD<Coordinate> local = Helper.calculateConvexHull(points); // Get the local convex Hull
 		JavaRDD<Coordinate> localList = local.repartition(1);
 
 		JavaRDD<Coordinate> globalList = localList.mapPartitions(new GlobalHull());
-		globalList = globalList.mapPartitions(new GlobalHull());
+		globalList = globalList.mapPartitions(new GlobalHull());//Caluculate the Global Convex Hull, taking local hulls into consideration.
 
 		JavaRDD<String> globalPoints = globalList.map(new Function<Coordinate, String>() {
 
@@ -42,13 +42,15 @@ public class Helper {
 
 		return globalPoints;
 	}
-
+	
+	/* method to calculate local convex Hulls*/
 	public static JavaRDD<Coordinate> calculateConvexHull(JavaRDD<String> points) {
 		JavaRDD<Coordinate> local = points.mapPartitions(new LocalConvexHull());
 		return local;
 	}
 }
 
+/* Calculate local convex Hull*/
 class LocalConvexHull implements FlatMapFunction<Iterator<String>, Coordinate>, Serializable {
 
 	private static final long serialVersionUID = 1L;
