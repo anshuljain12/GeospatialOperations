@@ -81,6 +81,7 @@ public class Rectangle implements java.io.Serializable {
 
 	}
 
+	//Helper method to check if the rectangle is inside
 	public boolean findIfPointIsInside(SpatialPoint point) {
 		float pointX = point.pointX;
 		float pointY = point.pointY;
@@ -101,6 +102,7 @@ public class Rectangle implements java.io.Serializable {
 
 	}
 
+	// Helper method to check if two rectangles are equal
 	public boolean RectangleEquals(Rectangle rectangle) {
 		if (rectangle.leftLower.pointX == this.leftLower.pointX
 				&& rectangle.leftLower.pointY == this.leftLower.pointY
@@ -113,21 +115,7 @@ public class Rectangle implements java.io.Serializable {
 
 	}
 
-	/*
-	 * public boolean findIfPointIsOnPoint(SpatialPoint point) { float pointX =
-	 * point.pointX; float pointY = point.pointY;
-	 * 
-	 * if (pointX == this.leftLower.pointX && pointY == this.leftLower.pointY &&
-	 * pointX == this.leftUpper.pointX && pointY == this.leftUpper.pointY &&
-	 * pointX == this.rightLower.pointX && pointY == this.rightLower.pointY &&
-	 * pointX == this.rightUpper.pointX && pointY == this.rightUpper.pointY) {
-	 * 
-	 * return true;
-	 * 
-	 * } else { return false; }
-	 * 
-	 * }
-	 */
+	//helper method to find if a point is inside or on the rectangle
 	public boolean findIfPointIsInsideforPoint(SpatialPoint point) {
 		float pointX = point.pointX;
 		float pointY = point.pointY;
