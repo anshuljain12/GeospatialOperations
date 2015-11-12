@@ -37,7 +37,7 @@ public class Union {
 			sc.close();
 			return;
 		}
-		unionPolygons(sc, args[0], args[1] + Utils.getCurrentTime());
+		unionPolygons(sc, args[0], args[1]);
 		sc.close();
 	}
 
