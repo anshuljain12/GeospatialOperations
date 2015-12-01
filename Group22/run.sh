@@ -55,7 +55,7 @@ do
 		timeAgg1=$(date +"%s%3N")
 		$spark_home/bin/spark-submit --class edu.asu.cse512.Aggregation --master ${master} --jars jts.jar Aggregation-0.1.jar ${AggregationArgs}
 		timeAgg2=$(date +"%s%3N")
-		echo 'Time Taken for Aggregation: ' $(($timeAggregation2 - $timeAggregation1)) 'ms'
+		echo 'Time Taken for Aggregation: ' $(($timeAgg2 - $timeAgg1)) 'ms'
 	fi
 	if [ ${answer} -eq 9 ]; then
 		echo 'Time Taken for Union:' $(($timeUnion2 - $timeUnion1)) 'ms\n'
@@ -65,7 +65,7 @@ do
 		echo 'Time Taken Join Points: ' $(($timeJoin2 - $timeJoin1)) 'ms\n'
 		echo 'Time Taken for Range Query: ' $(($timeRange2 - $timeRange1)) 'ms\n'
 		echo 'Time Taken for Join Rectangle: ' $(($timeJoin4 - $timeJoin3)) 'ms\n'
-		echo 'Time Taken for Aggregation: ' $(($timeAggregation2 - $timeAggregation1)) 'ms\n'
+		echo 'Time Taken for Aggregation: ' $(($timeAgg2 - $timeAgg1)) 'ms\n'
 	fi 
 	echo "Operation completed"
 done

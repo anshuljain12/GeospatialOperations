@@ -135,7 +135,7 @@ public class Join {
 				public String call(String s) {
 					return s;
 				}
-			}, true, 1).repartition(1).saveAsTextFile(outputPath);
+			}, true, 1).repartition(1);
 
 		} else if (inputType.equalsIgnoreCase("rectangle")) {
 
