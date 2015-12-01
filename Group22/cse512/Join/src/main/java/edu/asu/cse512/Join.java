@@ -29,11 +29,13 @@ public class Join {
 		SparkConf conf = new SparkConf().setAppName("Group22-Spatial Join-"
 				+ inputType);
 		JavaSparkContext sc = new JavaSparkContext(conf);
-		spatialJoinQuery(inp1, inp2, out, inputType, sc); // Function which
+		JavaRDD<String> sortedString = spatialJoinQuery(inp1, inp2, out, inputType, sc); // Function which
 															// performs spatial
 															// join
 															// functionality on
 															// given input file.
+		
+		sortedString.saveAsTextFile(out);
 		sc.close();
 	}
 
@@ -51,11 +53,12 @@ public class Join {
 	 * @return : Boolean
 	 * @throws IOException
 	 */
-	public static boolean spatialJoinQuery(String spatialObjectPathFile,
+	public static JavaRDD<String> spatialJoinQuery(String spatialObjectPathFile,
 			String qryWindowsPath, String outputPath, String inputType,
 			JavaSparkContext sc) throws IOException {
 
 		JavaRDD<String> queryWindow = sc.textFile(qryWindowsPath);
+		JavaRDD<String> finalResultRDD = null ;
 
 		// Creating RDD for query windows
 		JavaRDD<Rectangle> rect1 = queryWindow
@@ -124,15 +127,15 @@ public class Join {
 				strPointsList.add(formatedString1);
 			}
 			// Saving into file.
-			JavaRDD<String> finalPointResultRDD = sc.parallelize(strPointsList);
-			finalPointResultRDD.sortBy(new Function<String, String>() {
+			finalResultRDD = sc.parallelize(strPointsList);
+			finalResultRDD.sortBy(new Function<String, String>() {
 
 				private static final long serialVersionUID = 1L;
 
 				public String call(String s) {
 					return s;
 				}
-			}, true, 1).repartition(1).saveAsTextFile(outputPath);
+			}, true, 1).repartition(1);
 
 		} else if (inputType.equalsIgnoreCase("rectangle")) {
 
@@ -267,18 +270,19 @@ public class Join {
 				str.add(formatedString);
 			}
 			// Saving into file.
-			JavaRDD<String> finalResultRDD = sc.parallelize(str);
-			finalResultRDD.sortBy(new Function<String, String>() {
+			finalResultRDD = sc.parallelize(str);
+			finalResultRDD =  finalResultRDD.sortBy(new Function<String, String>() {
 
 				private static final long serialVersionUID = 1L;
 
 				public String call(String s) {
 					return s;
 				}
-			}, true, 1).repartition(1).saveAsTextFile(outputPath);
+			}, true, 1).repartition(1);
 		}
 
-		return false;
+	
+		return finalResultRDD ;
 
 	}
 
