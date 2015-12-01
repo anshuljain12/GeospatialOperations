@@ -23,19 +23,17 @@ public class Join {
 								// rectangles
 		String inp2 = args[1]; // Input 2: csv file containing query input
 		String out = args[2]; // Output: File where the
-														// result is stored
+								// result is stored
 		String inputType = args[3]; // InputType: whether Point or rectangle
 
 		SparkConf conf = new SparkConf().setAppName("Group22-Spatial Join-"
 				+ inputType);
 		JavaSparkContext sc = new JavaSparkContext(conf);
-		JavaRDD<String> sortedString = spatialJoinQuery(inp1, inp2, out, inputType, sc); // Function which
-															// performs spatial
-															// join
-															// functionality on
-															// given input file.
-		
-		sortedString.saveAsTextFile(out);
+		// Function which performs spatial join functionality on given input file.
+		JavaRDD<String> sortedString = spatialJoinQuery(inp1, inp2, out,
+				inputType, sc); 
+
+		sortedString.repartition(1).saveAsTextFile(out);
 		sc.close();
 	}
 
@@ -53,12 +51,13 @@ public class Join {
 	 * @return : Boolean
 	 * @throws IOException
 	 */
-	public static JavaRDD<String> spatialJoinQuery(String spatialObjectPathFile,
-			String qryWindowsPath, String outputPath, String inputType,
-			JavaSparkContext sc) throws IOException {
+	public static JavaRDD<String> spatialJoinQuery(
+			String spatialObjectPathFile, String qryWindowsPath,
+			String outputPath, String inputType, JavaSparkContext sc)
+			throws IOException {
 
 		JavaRDD<String> queryWindow = sc.textFile(qryWindowsPath);
-		JavaRDD<String> finalResultRDD = null ;
+		JavaRDD<String> finalResultRDD = null;
 
 		// Creating RDD for query windows
 		JavaRDD<Rectangle> rect1 = queryWindow
@@ -135,7 +134,7 @@ public class Join {
 				public String call(String s) {
 					return s;
 				}
-			}, true, 1).repartition(1);
+			}, true, 1);
 
 		} else if (inputType.equalsIgnoreCase("rectangle")) {
 
@@ -231,7 +230,7 @@ public class Join {
 										|| intersection(s.rightUpper,
 												s.leftUpper, rec.rightUpper,
 												rec.leftUpper)) {
-									// System.out.println("hey!!");
+									
 									float f1 = rec.getId();
 									long l1 = Math.round(f1);
 									rectangleList.add(l1);
@@ -242,7 +241,7 @@ public class Join {
 										&& rec.findIfPointIsInside(s.leftUpper)
 										&& rec.findIfPointIsInside(s.rightLower)
 										&& rec.findIfPointIsInside(s.rightUpper)) {
-									// System.out.println(rec.id);
+									
 									float f = rec.getId();
 									long l = Math.round(f);
 									rectangleList.add(l);
@@ -271,18 +270,18 @@ public class Join {
 			}
 			// Saving into file.
 			finalResultRDD = sc.parallelize(str);
-			finalResultRDD =  finalResultRDD.sortBy(new Function<String, String>() {
+			finalResultRDD = finalResultRDD.sortBy(
+					new Function<String, String>() {
 
-				private static final long serialVersionUID = 1L;
+						private static final long serialVersionUID = 1L;
 
-				public String call(String s) {
-					return s;
-				}
-			}, true, 1).repartition(1);
+						public String call(String s) {
+							return s;
+						}
+					}, true, 1);
 		}
 
-	
-		return finalResultRDD ;
+		return finalResultRDD;
 
 	}
 
